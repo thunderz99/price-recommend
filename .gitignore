@@ -1,0 +1,6 @@
+__pycache__
+train.1000000.tsv
+.vscode
+react/node_modules
+react/build
+.ipynb_checkpoints

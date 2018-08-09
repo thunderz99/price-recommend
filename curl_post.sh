@@ -1,0 +1,1 @@
+curl http://localhost:5000/api/predict -X POST -H "Content-Type: application/json" --data @item1.json
