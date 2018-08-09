@@ -2,7 +2,7 @@
 
 ## 背景
 
-メリカリが値段をAIで査定するニュースがあった。
+メリカリが値段をAIでサジェストしてくれる記事を見た。
 
 実際Kaggle上にデータと参考のソースコードがあるため、自分でも作ってみた。
 
@@ -16,60 +16,81 @@
 平均の値段の誤差は16ドルくらい。
 
 
-一位は0.37。
+1位は0.37。
 
 
-[github ソース]()
+[github ソース](https://stainless.dreamarts.co.jp/l-zhang/price-recommend)
 
 
 ## 実現の仕方
 
-前回の[テキスト分類](https://stainless.dreamarts.co.jp/l-zhang/keras_text)を応用した
+### データを見る
+
+![データを見る](docs/images/price02.png)
 
 
-テキスト分類は、文章はどのカテゴリに該当するかを判断する。
+### データを加工する
 
-FAQは、ユーザの質問はどの意図かに該当するかを判断して、そして事前用意した標準回答を返す。
-
-### データ収集
-
-SDBのrest apiを利用し、バインダ内の文書を取得
-
-
-### データ準備
-
-Mecabで文章を単語に分かち書きする
+* 名前・カテゴリ・説明をVector化 (tf/idf)
 
 ```
-採用活動に関する工数はどこにつければいいですか？
+"MLB Cincinati Reds T Shirt Size XL"
 ↓
-採用,活動,工数,どこ,つけれ,いい
+[0.1, 0.12, 4.2, 6.1, 1.5, 3.5, 4.8]
 ```
 
-* 単語のリストをベクトルに変換(word2vec [1],[2])
+* ブランド・コンディション・送料オプションをOne-hot Vector化
 
-![word2vecイメージ](./docs/images/keras-faq03.jpg)
+```
+"Apple", "Sony", "Samsung", "Missing"
+↓
+[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]
+```
+
+### 違うフィーチャーをつなぐ
+[0, 0, 0, 1, 0.1, 0.12, 4.2, 6.1, 1.5, 3.5, 4.8]
+
 
 ### モデル
 
-* 単語ベクトルを、以下のCNN1D(畳み込みネットワーク1D)のモデルにインプット[3]
-  * アウトプットはN個の質問
+* 勾配ブースティング木(Gradient Boosting Decision Tree)
+  * マイクロソフトのLightGBMライブラリを使用
+  
+![gradient boosting tree](docs/images/price03.png)
 
-* 訓練済みのモデルを利用しrest apiを作成
-* ボットで呼び出す
+#### 勾配ブースティング木の強み
+* 表形式データにに向いている
+* モデルは簡単
+* 訓練・推測は早い
+* 推測ロジックは説明しやすい
+
+#### ニューラルネットワークの強み
+
+![nn](docs/images/price04.jpeg)
+
+* 画像・音声・ビデオ・自然言語処理（認識・生成）
+* モデルはたくさんのバリエーションがある
+* 大量データの時より精度向上
 
 ## 今後の発展
 
-* 社内のFAQを全部ボットに集約？
-* SalesWeaponとして売る？
+* いろんなフォームデータから、結果を推測・分類するタスクに活用できそう
+  * 与信判断？ プロジェクト健康度判断？ 
+* Word2VecでテキストのVectorを強化
+* CNN/RNNで精度向上？
+
 
 ## 参考
 
-[1] <https://www.tensorflow.org/tutorials/word2vec>
+[1] <https://towardsdatascience.com/machine-learning-for-retail-price-suggestion-with-python-64531e64186d>
 
-[2] <https://www.analyticsvidhya.com/blog/2017/06/word-embeddings-count-word2veec/>
+[2] <https://www.kaggle.com/c/mercari-price-suggestion-challenge>
 
-[3] <https://github.com/keras-team/keras/blob/master/examples/imdb_cnn.py>
+[3] <https://qiita.com/TomokIshii/items/3729c1b9c658cc48b5cb>
+
+[4] <https://homes.cs.washington.edu/~tqchen/pdf/BoostedTree.pdf>
+
+[5] <https://www.quora.com/Why-is-xgboost-given-so-much-less-attention-than-deep-learning-despite-its-ubiquity-in-winning-Kaggle-solutions#>
 
 
 
