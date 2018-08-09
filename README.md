@@ -21,6 +21,15 @@
 
 [github ソース](https://stainless.dreamarts.co.jp/l-zhang/price-recommend)
 
+### Usage
+
+```
+$ python3 web.py
+
+$ open http://localhost:5000
+
+```
+
 
 ## 実現の仕方
 
